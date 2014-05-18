@@ -41,8 +41,17 @@ func (c *Client) TryNotifying(note *ErrorNotification) error {
 	if err != nil {
 		return err
 	}
-	url := "https://" + c.Hostname() + "/" + c.ApiKey
-	_, err = http.Post(url, "application/json", bytes.NewReader(json))
+
+	for _ = range(c.hostnames) {
+		url := "https://" + c.Hostname() + "/" + c.ApiKey
+		_, err = http.Post(url, "application/json", bytes.NewReader(json))
+		if err == nil {
+			break
+		} else {
+			c.CycleHostname()
+		}
+	}
+
 	if err != nil {
 		return err
 	}
@@ -53,7 +62,6 @@ func (c *Client) Hostname() string {
 	return c.hostnames[c.lastHostnameIdx]
 }
 
-func (c *Client) NextHostname() string {
-	c.lastHostnameIdx++
-	return c.Hostname()
+func (c *Client) CycleHostname() {
+	c.lastHostnameIdx = (c.lastHostnameIdx + 1) % len(c.hostnames)
 }
