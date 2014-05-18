@@ -37,7 +37,7 @@ func Start(apiKey string) {
 
 func Notify(appErr error) {
 	notification := newErrorNotification(appErr)
-	err := client.TryNotifying(notification)
+	err := client.Notify(notification)
 	if err != nil {
 		log.Println(err)
 	}
