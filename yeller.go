@@ -28,14 +28,13 @@ type StackFrame struct {
 }
 
 const (
-	CLIENT_VERSION  = "yeller-golang: 0.0.1"
 	MAX_STACK_DEPTH = 256
 )
 
-var apiKey string
+var client *Client
 
-func Start(newApiKey string) {
-	apiKey = newApiKey
+func Start(apiKey string) {
+	client = NewClient(apiKey)
 }
 
 func Notify(err error) {
@@ -47,7 +46,7 @@ func Notify(err error) {
 		return
 	}
 
-	url := "https://collector1.yellerapp.com/" + apiKey
+	url := "https://" + client.Hostname() + "/" + client.ApiKey
 	_, err = http.Post(url, "application/json", bytes.NewReader(json))
 	if err != nil {
 		log.Println(err)
@@ -55,7 +54,7 @@ func Notify(err error) {
 	}
 }
 
-func (f StackFrame)MarshalJSON() ([]byte, error) {
+func (f StackFrame) MarshalJSON() ([]byte, error) {
 	fields := []string{f.Filename, f.LineNumber, f.FunctionName}
 	return json.Marshal(fields)
 }
@@ -65,12 +64,12 @@ func newErrorNotification(err error) *ErrorNotification {
 		Type:          "error",
 		Message:       err.Error(),
 		StackTrace:    applicationStackTrace(),
-		ClientVersion: CLIENT_VERSION,
+		ClientVersion: client.Version,
 	}
 }
 
 func applicationStackTrace() (stackTrace []StackFrame) {
-	for i := 1; i <= MAX_STACK_DEPTH + 1; i++ {
+	for i := 1; i <= MAX_STACK_DEPTH+1; i++ {
 		pc, file, line, ok := runtime.Caller(i)
 		if !ok {
 			break
