@@ -2,7 +2,6 @@ package yeller
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"runtime"
 	"strconv"
@@ -47,10 +46,7 @@ func Notify(appErr error) {
 
 func NotifyInfo(appErr error, info map[string]interface{}) {
 	notification := newErrorNotification(appErr, info)
-	err := client.Notify(notification)
-	if err != nil {
-		log.Println(err)
-	}
+	client.Notify(notification)
 }
 
 func (f StackFrame) MarshalJSON() ([]byte, error) {

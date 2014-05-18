@@ -3,6 +3,8 @@ package yeller
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
+	"log"
 	"math/rand"
 	"net"
 	"net/http"
@@ -10,12 +12,13 @@ import (
 )
 
 type Client struct {
-	ApiKey          string
 	Environment     string
 	Version         string
-	lastHostnameIdx int
-	hostnames       []string
+	apiKey          string
 	httpClient      *http.Client
+	hostnames       []string
+	lastHostnameIdx int
+	queue           chan *ErrorNotification
 }
 
 const CLIENT_VERSION = "yeller-golang: 0.0.1"
@@ -40,20 +43,33 @@ func NewClient(apiKey string, env string) (client *Client) {
 	}
 	httpClient := http.Client{Transport: &transport}
 
-	return &Client{
-		ApiKey:          apiKey,
+	client = &Client{
 		Environment:     env,
 		Version:         CLIENT_VERSION,
-		lastHostnameIdx: rand.Intn(len(hostnames)),
-		hostnames:       hostnames,
+		apiKey:          apiKey,
 		httpClient:      &httpClient,
+		hostnames:       hostnames,
+		lastHostnameIdx: rand.Intn(len(hostnames)),
+		queue:           make(chan *ErrorNotification, 32),
 	}
+
+	go func() {
+		for note := range client.queue {
+			client.SyncNotify(note)
+		}
+	}()
+
+	return client
 }
 
-func (c *Client) Notify(note *ErrorNotification) error {
+func (c *Client) Notify(note *ErrorNotification) {
+	c.queue <- note
+}
+
+func (c *Client) SyncNotify(note *ErrorNotification) {
 	json, err := json.Marshal(note)
 	if err != nil {
-		return err
+		log.Println(err)
 	}
 
 	for _ = range c.hostnames {
@@ -66,13 +82,12 @@ func (c *Client) Notify(note *ErrorNotification) error {
 	}
 
 	if err != nil {
-		return err
+		log.Println(err)
 	}
-	return nil
 }
 
 func (c *Client) tryNotifying(json []byte) error {
-	url := "https://" + c.hostname() + "/" + c.ApiKey
+	url := "https://" + c.hostname() + "/" + c.apiKey
 	_, err := c.httpClient.Post(url, "application/json", bytes.NewReader(json))
 	return err
 }
