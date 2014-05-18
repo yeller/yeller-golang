@@ -3,6 +3,7 @@ package yeller
 import (
 	"encoding/json"
 	"log"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -52,9 +53,15 @@ func newErrorNotification(err error) *ErrorNotification {
 	return &ErrorNotification{
 		Type:          "error",
 		Message:       err.Error(),
+		Host:          applicationHostname(),
 		StackTrace:    applicationStackTrace(),
 		ClientVersion: client.Version,
 	}
+}
+
+func applicationHostname() string {
+	hostname, _ := os.Hostname()
+	return hostname
 }
 
 func applicationStackTrace() (stackTrace []StackFrame) {
