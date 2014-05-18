@@ -22,6 +22,7 @@ When handing errors that you'd like to log to Yeller:
 file, err := os.Open("filename.ext")
 if err != nil {
         yeller.Notify(err)
+        yeller.NotifyInfo(err, ...)
         log.Fatal(err)
 }
 ```

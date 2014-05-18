@@ -42,7 +42,11 @@ func StartEnv(apiKey string, env string) {
 }
 
 func Notify(appErr error) {
-	notification := newErrorNotification(appErr)
+	NotifyInfo(appErr, make(map[string]interface{}))
+}
+
+func NotifyInfo(appErr error, info map[string]interface{}) {
+	notification := newErrorNotification(appErr, info)
 	err := client.Notify(notification)
 	if err != nil {
 		log.Println(err)
@@ -54,13 +58,14 @@ func (f StackFrame) MarshalJSON() ([]byte, error) {
 	return json.Marshal(fields)
 }
 
-func newErrorNotification(err error) *ErrorNotification {
+func newErrorNotification(err error, info map[string]interface{}) *ErrorNotification {
 	return &ErrorNotification{
 		Type:          "error",
 		Message:       err.Error(),
 		StackTrace:    applicationStackTrace(),
 		Host:          applicationHostname(),
 		Environment:   client.Environment,
+		CustomData:    info,
 		ClientVersion: client.Version,
 	}
 }
