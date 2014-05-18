@@ -15,6 +15,7 @@ type ErrorNotification struct {
 	StackTrace    []StackFrame           `json:"stacktrace"`
 	Url           string                 `json:"url"`
 	Host          string                 `json:"host"`
+	Environment   string                 `json:"application-environment"`
 	CustomData    map[string]interface{} `json:"custom-data"`
 	Location      string                 `json:"location"`
 	ClientVersion string                 `json:"client-version"`
@@ -33,7 +34,11 @@ const (
 var client *Client
 
 func Start(apiKey string) {
-	client = NewClient(apiKey)
+	client = NewClient(apiKey, "production")
+}
+
+func StartEnv(apiKey string, env string) {
+	client = NewClient(apiKey, env)
 }
 
 func Notify(appErr error) {
@@ -53,8 +58,9 @@ func newErrorNotification(err error) *ErrorNotification {
 	return &ErrorNotification{
 		Type:          "error",
 		Message:       err.Error(),
-		Host:          applicationHostname(),
 		StackTrace:    applicationStackTrace(),
+		Host:          applicationHostname(),
+		Environment:   client.Environment,
 		ClientVersion: client.Version,
 	}
 }

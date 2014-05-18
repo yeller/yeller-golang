@@ -11,6 +11,7 @@ import (
 
 type Client struct {
 	ApiKey          string
+	Environment     string
 	Version         string
 	lastHostnameIdx int
 	hostnames       []string
@@ -19,7 +20,7 @@ type Client struct {
 
 const CLIENT_VERSION = "yeller-golang: 0.0.1"
 
-func NewClient(apiKey string) (client *Client) {
+func NewClient(apiKey string, env string) (client *Client) {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	hostnames := []string{
@@ -41,6 +42,7 @@ func NewClient(apiKey string) (client *Client) {
 
 	return &Client{
 		ApiKey:          apiKey,
+		Environment:     env,
 		Version:         CLIENT_VERSION,
 		lastHostnameIdx: rand.Intn(len(hostnames)),
 		hostnames:       hostnames,

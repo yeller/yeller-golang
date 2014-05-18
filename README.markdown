@@ -8,7 +8,11 @@ In your program initialization:
 
 ```go
 func main() {
+        // Defaults to "production" environment
         yeller.Start("YOUR_API_KEY")
+
+        // Or set an environment name for your application
+        yeller.StartEnv("YOUR_API_KEY", "staging")
 }
 ```
 
