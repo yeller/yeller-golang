@@ -1,10 +1,8 @@
 package yeller
 
 import (
-	"bytes"
 	"encoding/json"
 	"log"
-	"net/http"
 	"runtime"
 	"strconv"
 	"strings"
@@ -37,20 +35,11 @@ func Start(apiKey string) {
 	client = NewClient(apiKey)
 }
 
-func Notify(err error) {
-	notification := newErrorNotification(err)
-
-	json, err := json.Marshal(notification)
+func Notify(appErr error) {
+	notification := newErrorNotification(appErr)
+	err := client.TryNotifying(notification)
 	if err != nil {
 		log.Println(err)
-		return
-	}
-
-	url := "https://" + client.Hostname() + "/" + client.ApiKey
-	_, err = http.Post(url, "application/json", bytes.NewReader(json))
-	if err != nil {
-		log.Println(err)
-		return
 	}
 }
 

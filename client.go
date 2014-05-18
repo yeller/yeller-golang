@@ -1,7 +1,10 @@
 package yeller
 
 import (
+	"bytes"
+	"encoding/json"
 	"math/rand"
+	"net/http"
 	"time"
 )
 
@@ -31,6 +34,19 @@ func NewClient(apiKey string) (client *Client) {
 		lastHostnameIdx: rand.Intn(len(hostnames)),
 		hostnames:       hostnames,
 	}
+}
+
+func (c *Client) TryNotifying(note *ErrorNotification) error {
+	json, err := json.Marshal(note)
+	if err != nil {
+		return err
+	}
+	url := "https://" + c.Hostname() + "/" + c.ApiKey
+	_, err = http.Post(url, "application/json", bytes.NewReader(json))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c *Client) Hostname() string {
