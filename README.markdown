@@ -16,7 +16,7 @@ func main() {
 }
 ```
 
-When handing errors that you'd like to log to Yeller:
+When handling errors that you'd like to log to Yeller:
 
 ```go
 file, err := os.Open("filename.ext")
