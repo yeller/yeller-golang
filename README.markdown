@@ -26,3 +26,15 @@ if err != nil {
         log.Fatal(err)
 }
 ```
+
+if you're inside an http handler, yeller
+can log other information as well:
+
+```go
+file, err := os.Open("filename.ext")
+if err != nil {
+        yeller.NotifyHTTP(err, request)
+        yeller.NotifyHTTPInfo(err, ...)
+        log.Fatal(err)
+}
+```

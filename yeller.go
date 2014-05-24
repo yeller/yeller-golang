@@ -3,6 +3,7 @@ package yeller
 import (
 	"encoding/json"
 	"log"
+	"net/http"
 	"os"
 	"runtime"
 	"strconv"
@@ -51,6 +52,37 @@ func NotifyInfo(appErr error, info map[string]interface{}) {
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func NotifyHTTP(appErr error, request http.Request) {
+    info := make(map[string]interface{})
+    NotifyHTTPInfo(appErr, request, info)
+}
+
+func NotifyHTTPInfo(appErr error, request http.Request, info map[string]interface{}) {
+    // we have to copy the values out of the
+    // map because we're about to mutate the map
+    // and we don't want to mutate user provided data
+    newInfo := make(map[string]interface{})
+
+    formErr := request.ParseForm()
+    if formErr != nil {
+        newInfo["Params"] = request.Form
+    }
+    newInfo["Cookies"] = getCookies(request)
+
+    for k,v := range info {
+        newInfo[k] = v
+    }
+    NotifyInfo(appErr, newInfo)
+}
+
+func getCookies(request http.Request) map[string]interface{} {
+    cookies := make(map[string]interface{})
+    for _, cookie := range request.Cookies() {
+        cookies[cookie.Name] = cookie.Value
+    }
+    return cookies
 }
 
 func (f StackFrame) MarshalJSON() ([]byte, error) {

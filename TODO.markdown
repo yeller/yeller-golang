@@ -1,6 +1,5 @@
 # TODO
 
-* HTTP support
 * panic
 * Documentation
 * Logging and error handling
