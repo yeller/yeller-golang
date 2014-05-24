@@ -37,11 +37,19 @@ const (
 var client *Client
 
 func Start(apiKey string) {
-	client = NewClient(apiKey, "production")
+	client = NewClient(apiKey, "production", StdErrErrorHandler())
 }
 
 func StartEnv(apiKey string, env string) {
-	client = NewClient(apiKey, env)
+	client = NewClient(apiKey, env, StdErrErrorHandler())
+}
+
+func StartWithErrorHandler(apiKey string, env string, errorHandler YellerErrorHandler) {
+	client = NewClient(apiKey, env, errorHandler)
+}
+
+func StartWithErrorHandlerEnvironment(apiKey string, env string, errorHandler YellerErrorHandler) {
+	client = NewClient(apiKey, env, errorHandler)
 }
 
 func Notify(appErr error) {
