@@ -45,7 +45,7 @@ func StartWithErrorHandler(apiKey string, env string, errorHandler YellerErrorHa
 	client = NewClient(apiKey, env, errorHandler)
 }
 
-func StartWithErrorHandlerEnvironment(apiKey string, env string, errorHandler YellerErrorHandler) {
+func StartWithErrorHandlerEnv(apiKey string, env string, errorHandler YellerErrorHandler) {
 	client = NewClient(apiKey, env, errorHandler)
 }
 
