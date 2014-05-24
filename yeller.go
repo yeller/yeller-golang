@@ -55,34 +55,35 @@ func NotifyInfo(appErr error, info map[string]interface{}) {
 }
 
 func NotifyHTTP(appErr error, request http.Request) {
-    info := make(map[string]interface{})
-    NotifyHTTPInfo(appErr, request, info)
+	info := make(map[string]interface{})
+	NotifyHTTPInfo(appErr, request, info)
 }
 
 func NotifyHTTPInfo(appErr error, request http.Request, info map[string]interface{}) {
-    // we have to copy the values out of the
-    // map because we're about to mutate the map
-    // and we don't want to mutate user provided data
-    newInfo := make(map[string]interface{})
+	// we have to copy the values out of the
+	// map because we're about to mutate the map
+	// and we don't want to mutate user provided data
+	newInfo := make(map[string]interface{})
 
-    formErr := request.ParseForm()
-    if formErr != nil {
-        newInfo["Params"] = request.Form
-    }
-    newInfo["Cookies"] = getCookies(request)
+	formErr := request.ParseForm()
+	if formErr != nil {
+		newInfo["Params"] = request.Form
+	}
+	newInfo["Cookies"] = getCookies(request)
+    newInfo["url"] = request.URL
 
-    for k,v := range info {
-        newInfo[k] = v
-    }
-    NotifyInfo(appErr, newInfo)
+	for k, v := range info {
+		newInfo[k] = v
+	}
+	NotifyInfo(appErr, newInfo)
 }
 
 func getCookies(request http.Request) map[string]interface{} {
-    cookies := make(map[string]interface{})
-    for _, cookie := range request.Cookies() {
-        cookies[cookie.Name] = cookie.Value
-    }
-    return cookies
+	cookies := make(map[string]interface{})
+	for _, cookie := range request.Cookies() {
+		cookies[cookie.Name] = cookie.Value
+	}
+	return cookies
 }
 
 func (f StackFrame) MarshalJSON() ([]byte, error) {
@@ -90,16 +91,21 @@ func (f StackFrame) MarshalJSON() ([]byte, error) {
 	return json.Marshal(fields)
 }
 
-func newErrorNotification(err error, info map[string]interface{}) *ErrorNotification {
-	return &ErrorNotification{
+func newErrorNotification(appErr error, info map[string]interface{}) *ErrorNotification {
+    url, ok := info["url"].(string)
+    newErr := ErrorNotification{
 		Type:          "error",
-		Message:       err.Error(),
+		Message:       appErr.Error(),
 		StackTrace:    applicationStackTrace(),
 		Host:          applicationHostname(),
 		Environment:   client.Environment,
 		CustomData:    info,
 		ClientVersion: client.Version,
 	}
+    if ok {
+        newErr.Url = url
+    }
+    return &newErr
 }
 
 func applicationHostname() string {
