@@ -2,6 +2,8 @@ package yeller
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"log"
 	"os"
 	"runtime"
@@ -50,6 +52,28 @@ func NotifyInfo(appErr error, info map[string]interface{}) {
 	err := client.Notify(notification)
 	if err != nil {
 		log.Println(err)
+	}
+}
+
+func NotifyPanic(panicErr interface{}) {
+	switch v := panicErr.(type) {
+	case error:
+		Notify(v)
+	case string:
+		Notify(errors.New(v))
+	default:
+		Notify(errors.New(fmt.Sprint(panicErr)))
+	}
+}
+
+func NotifyPanicInfo(panicErr interface{}, info map[string]interface{}) {
+	switch v := panicErr.(type) {
+	case error:
+		NotifyInfo(v, info)
+	case string:
+		NotifyInfo(errors.New(v), info)
+	default:
+		NotifyInfo(errors.New(fmt.Sprint(panicErr)), info)
 	}
 }
 
