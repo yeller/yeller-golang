@@ -3,9 +3,12 @@ package yeller
 import (
 	"bytes"
 	"encoding/json"
+    "errors"
+	"log"
 	"math/rand"
 	"net"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -16,11 +19,17 @@ type Client struct {
 	lastHostnameIdx int
 	hostnames       []string
 	httpClient      *http.Client
+	errorHandler    YellerErrorHandler
+}
+
+type YellerErrorHandler interface {
+	HandleIOError(error) error
+	HandleAuthError(error) error
 }
 
 const CLIENT_VERSION = "yeller-golang: 0.0.1"
 
-func NewClient(apiKey string, env string) (client *Client) {
+func NewClient(apiKey string, env string, errorHandler YellerErrorHandler) (client *Client) {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	hostnames := []string{
@@ -47,6 +56,7 @@ func NewClient(apiKey string, env string) (client *Client) {
 		lastHostnameIdx: rand.Intn(len(hostnames)),
 		hostnames:       hostnames,
 		httpClient:      &httpClient,
+		errorHandler:    errorHandler,
 	}
 }
 
@@ -66,14 +76,46 @@ func (c *Client) Notify(note *ErrorNotification) error {
 	}
 
 	if err != nil {
+        c.errorHandler.HandleIOError(err)
 		return err
 	}
 	return nil
 }
 
+type LogErrorHandler struct {
+	logger *log.Logger
+}
+
+func (l *LogErrorHandler) HandleIOError(e error) error {
+	l.logger.Println(e)
+	return nil
+}
+
+func (l *LogErrorHandler) HandleAuthError(e error) error {
+	l.logger.Println(e)
+	return nil
+}
+
+func NewLogErrorHandler(l *log.Logger) YellerErrorHandler {
+	return &LogErrorHandler{
+		logger: l,
+	}
+}
+
+func NewStdErrErrorHandler() YellerErrorHandler {
+	return NewLogErrorHandler(log.New(os.Stderr, "yeller", log.Flags()))
+}
+
 func (c *Client) tryNotifying(json []byte) error {
 	url := "https://" + c.hostname() + "/" + c.ApiKey
-	_, err := c.httpClient.Post(url, "application/json", bytes.NewReader(json))
+	response, err := c.httpClient.Post(url, "application/json", bytes.NewReader(json))
+    if response.StatusCode == 401 {
+        c.errorHandler.HandleAuthError(errors.New("Could not authenticate yeller client. Check your API key and that your subscription is active"))
+        return nil
+    }
+    if response.StatusCode < 200 || response.StatusCode > 299 {
+        return errors.New("Received a non 200 HTTP Code: " + response.Status)
+    }
 	return err
 }
 
