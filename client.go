@@ -3,7 +3,7 @@ package yeller
 import (
 	"bytes"
 	"encoding/json"
-    "errors"
+	"errors"
 	"log"
 	"math/rand"
 	"net"
@@ -76,7 +76,7 @@ func (c *Client) Notify(note *ErrorNotification) error {
 	}
 
 	if err != nil {
-        c.errorHandler.HandleIOError(err)
+		c.errorHandler.HandleIOError(err)
 		return err
 	}
 	return nil
@@ -109,13 +109,13 @@ func NewStdErrErrorHandler() YellerErrorHandler {
 func (c *Client) tryNotifying(json []byte) error {
 	url := "https://" + c.hostname() + "/" + c.ApiKey
 	response, err := c.httpClient.Post(url, "application/json", bytes.NewReader(json))
-    if response.StatusCode == 401 {
-        c.errorHandler.HandleAuthError(errors.New("Could not authenticate yeller client. Check your API key and that your subscription is active"))
-        return nil
-    }
-    if response.StatusCode < 200 || response.StatusCode > 299 {
-        return errors.New("Received a non 200 HTTP Code: " + response.Status)
-    }
+	if response.StatusCode == 401 {
+		c.errorHandler.HandleAuthError(errors.New("Could not authenticate yeller client. Check your API key and that your subscription is active"))
+		return nil
+	}
+	if response.StatusCode < 200 || response.StatusCode > 299 {
+		return errors.New("Received a non 200 HTTP Code: " + response.Status)
+	}
 	return err
 }
 
