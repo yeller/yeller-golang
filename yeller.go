@@ -92,7 +92,6 @@ func (f StackFrame) MarshalJSON() ([]byte, error) {
 }
 
 func newErrorNotification(appErr error, info map[string]interface{}) *ErrorNotification {
-	url, ok := info["url"].(string)
 	newErr := ErrorNotification{
 		Type:          "error",
 		Message:       appErr.Error(),
@@ -102,6 +101,7 @@ func newErrorNotification(appErr error, info map[string]interface{}) *ErrorNotif
 		CustomData:    info,
 		ClientVersion: client.Version,
 	}
+	url, ok := info["url"].(string)
 	if ok {
 		newErr.Url = url
 	}
