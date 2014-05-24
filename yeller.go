@@ -94,7 +94,7 @@ func NotifyHTTPInfo(appErr error, request http.Request, info map[string]interfac
 		newInfo["Params"] = request.Form
 	}
 	newInfo["Cookies"] = getCookies(request)
-    newInfo["url"] = request.URL
+	newInfo["url"] = request.URL
 
 	for k, v := range info {
 		newInfo[k] = v
@@ -116,8 +116,8 @@ func (f StackFrame) MarshalJSON() ([]byte, error) {
 }
 
 func newErrorNotification(appErr error, info map[string]interface{}) *ErrorNotification {
-    url, ok := info["url"].(string)
-    newErr := ErrorNotification{
+	url, ok := info["url"].(string)
+	newErr := ErrorNotification{
 		Type:          "error",
 		Message:       appErr.Error(),
 		StackTrace:    applicationStackTrace(),
@@ -126,10 +126,10 @@ func newErrorNotification(appErr error, info map[string]interface{}) *ErrorNotif
 		CustomData:    info,
 		ClientVersion: client.Version,
 	}
-    if ok {
-        newErr.Url = url
-    }
-    return &newErr
+	if ok {
+		newErr.Url = url
+	}
+	return &newErr
 }
 
 func applicationHostname() string {
