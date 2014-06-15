@@ -2,7 +2,7 @@
 
 [Yeller](http://yellerapp.com) notifier for Golang.
 
-# Reporting Errors to Yeller in 30 Seconds
+## Reporting Errors to Yeller in 30 Seconds
 
 In your program initialization:
 
@@ -78,7 +78,7 @@ func f() {
 }
 ```
 
-# Wrapping Up
+## Wrapping Up
 
 So that's Yeller's golang client. I hope you enjoy using it to track and
 diagnose your go errors.
