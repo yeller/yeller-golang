@@ -1,3 +1,0 @@
-# TODO
-
-* Local random seed

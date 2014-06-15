@@ -30,8 +30,6 @@ type YellerErrorHandler interface {
 const CLIENT_VERSION = "yeller-golang: 0.0.1"
 
 func NewClient(apiKey string, env string, errorHandler YellerErrorHandler) (client *Client) {
-	rand.Seed(time.Now().UTC().UnixNano())
-
 	hostnames := []string{
 		"collector1.yellerapp.com",
 		"collector2.yellerapp.com",
@@ -53,7 +51,7 @@ func NewClient(apiKey string, env string, errorHandler YellerErrorHandler) (clie
 		ApiKey:          apiKey,
 		Environment:     env,
 		Version:         CLIENT_VERSION,
-		lastHostnameIdx: rand.Intn(len(hostnames)),
+		lastHostnameIdx: randomHostnameIdx(hostnames),
 		hostnames:       hostnames,
 		httpClient:      &httpClient,
 		errorHandler:    errorHandler,
@@ -110,7 +108,8 @@ func (c *Client) tryNotifying(json []byte) error {
 	url := "https://" + c.hostname() + "/" + c.ApiKey
 	response, err := c.httpClient.Post(url, "application/json", bytes.NewReader(json))
 	if response.StatusCode == 401 {
-		c.errorHandler.HandleAuthError(errors.New("Could not authenticate yeller client. Check your API key and that your subscription is active"))
+		authError := errors.New("Could not authenticate yeller client. Check your API key and that your subscription is active")
+		c.errorHandler.HandleAuthError(authError)
 		return nil
 	}
 	if response.StatusCode < 200 || response.StatusCode > 299 {
@@ -125,4 +124,12 @@ func (c *Client) hostname() string {
 
 func (c *Client) cycleHostname() {
 	c.lastHostnameIdx = (c.lastHostnameIdx + 1) % len(c.hostnames)
+}
+
+func randomHostnameIdx(hostnames []string) int {
+	// Use a locally-scoped random source to avoid overwriting
+	// global state.
+	randSrc := rand.NewSource(time.Now().UTC().UnixNano())
+	random := rand.New(randSrc)
+	return random.Intn(len(hostnames))
 }
