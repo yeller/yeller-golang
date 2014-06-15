@@ -31,11 +31,11 @@ const CLIENT_VERSION = "yeller-golang: 0.0.1"
 
 func NewClient(apiKey string, env string, errorHandler YellerErrorHandler) (client *Client) {
 	yellerHostnames := []string{
-		"collector1.yellerapp.com",
-		"collector2.yellerapp.com",
-		"collector3.yellerapp.com",
-		"collector4.yellerapp.com",
-		"collector5.yellerapp.com",
+		"https://collector1.yellerapp.com",
+		"https://collector2.yellerapp.com",
+		"https://collector3.yellerapp.com",
+		"https://collector4.yellerapp.com",
+		"https://collector5.yellerapp.com",
 	}
 	return NewClientHostnames(apiKey, env, errorHandler, yellerHostnames)
 }
@@ -113,7 +113,7 @@ func NewSilentErrorHandler() YellerErrorHandler {
 }
 
 func (c *Client) tryNotifying(json []byte) error {
-	url := "http://" + c.hostname() + "/" + c.ApiKey
+	url := c.hostname() + "/" + c.ApiKey
 	response, err := c.httpClient.Post(url, "application/json", bytes.NewReader(json))
 	if err != nil {
 		panic(err)
