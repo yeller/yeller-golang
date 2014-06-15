@@ -78,11 +78,6 @@ func f() {
 }
 ```
 
-## Wrapping Up
-
-So that's Yeller's golang client. I hope you enjoy using it to track and
-diagnose your go errors.
-
 ## Questions
 
 If you have any questions, feel free to shoot me an email, tcrayford@yellerapp.com
