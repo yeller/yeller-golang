@@ -70,17 +70,17 @@ func (f *FakeYeller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (f *FakeYeller) ShouldHaveReceivedRequestsOnPorts(exps map[int]int) {
-	diagnosis := make(map[int]int)
+	actual := make(map[int]int)
 	for _, r := range f.requests {
 		hostPort := strings.Split(r.Host, ":")
 		port, _ := strconv.Atoi(hostPort[len(hostPort)-1])
-		_, ok := diagnosis[port]
+		_, ok := actual[port]
 		if !ok {
-			diagnosis[port] = 0
+			actual[port] = 0
 		}
-		diagnosis[port] += 1
+		actual[port] += 1
 	}
-	for port, actualCount := range diagnosis {
+	for port, actualCount := range actual {
 		expectedCount, ok := exps[port]
 		if !ok {
 			f.test.Errorf("received unexpected request on port %v", port)
