@@ -31,6 +31,33 @@ func TestSendingExceptionsToMultipleServers(t *testing.T) {
 	fakeYeller.shutdown()
 }
 
+func TestRoundTrippingFailingServers(t *testing.T) {
+	fakeYellerHandler := func(f *FakeYeller, w http.ResponseWriter, r *http.Request) {
+		hostPort := strings.Split(r.Host, ":")
+		port, _ := strconv.Atoi(hostPort[len(hostPort)-1])
+		if port == 5000 {
+			f.requests = append(f.requests, r)
+			w.WriteHeader(http.StatusOK)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+
+	}
+	fakeYeller := NewFakeYeller(t, fakeYellerHandler, 5000, 5001, 5002)
+
+	hostnames := []string{"http://localhost:5000", "http://localhost:5001", "http://localhost:5002"}
+	client := NewClientHostnames("AN_API_KEY", ENV, NewPanicErrorHandler(), hostnames)
+	for _ = range hostnames {
+		note := newErrorNotification(client, errors.New("an error"), nil)
+		client.Notify(note)
+	}
+
+	fakeYeller.ShouldHaveReceivedRequestsOnPorts(map[int]int{
+		5000: 3, 5001: 0, 5002: 0,
+	})
+	fakeYeller.shutdown()
+}
+
 type FakeYeller struct {
 	Ports     []int
 	requests  []*http.Request
