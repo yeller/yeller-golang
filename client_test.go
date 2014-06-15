@@ -10,7 +10,7 @@ import (
 
 const ENV = "test"
 
-func TestHostnameRotation(t *testing.T) {
+func TestSendingExceptionsToMultipleServers(t *testing.T) {
 	fakeYeller := NewFakeYeller(t, 5000, 5001, 5002)
 
 	hostnames := []string{"http://localhost:5000", "http://localhost:5001", "http://localhost:5002"}
