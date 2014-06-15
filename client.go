@@ -30,14 +30,17 @@ type YellerErrorHandler interface {
 const CLIENT_VERSION = "yeller-golang: 0.0.1"
 
 func NewClient(apiKey string, env string, errorHandler YellerErrorHandler) (client *Client) {
-	hostnames := []string{
+	yellerHostnames := []string{
 		"collector1.yellerapp.com",
 		"collector2.yellerapp.com",
 		"collector3.yellerapp.com",
 		"collector4.yellerapp.com",
 		"collector5.yellerapp.com",
 	}
+	return NewClientHostnames(apiKey, env, errorHandler, yellerHostnames)
+}
 
+func NewClientHostnames(apiKey string, env string, errorHandler YellerErrorHandler, hostnames []string) (client *Client) {
 	// Set a timeout of 1 second before moving on to a different host
 	transport := http.Transport{
 		Dial: func(network, addr string) (net.Conn, error) {
@@ -104,9 +107,17 @@ func NewStdErrErrorHandler() YellerErrorHandler {
 	return NewLogErrorHandler(log.New(os.Stderr, "yeller", log.Flags()))
 }
 
+func NewSilentErrorHandler() YellerErrorHandler {
+	// XXX
+	return nil
+}
+
 func (c *Client) tryNotifying(json []byte) error {
-	url := "https://" + c.hostname() + "/" + c.ApiKey
+	url := "http://" + c.hostname() + "/" + c.ApiKey
 	response, err := c.httpClient.Post(url, "application/json", bytes.NewReader(json))
+    if err != nil {
+        panic(err)
+    }
 	if response.StatusCode == 401 {
 		authError := errors.New("Could not authenticate yeller client. Check your API key and that your subscription is active")
 		c.errorHandler.HandleAuthError(authError)
