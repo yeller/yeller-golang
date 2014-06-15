@@ -74,12 +74,11 @@ func (f *FakeYeller) ShouldHaveReceivedRequestsOnPorts(exps map[int]int) {
 	for _, r := range f.requests {
 		hostPort := strings.Split(r.Host, ":")
 		port, _ := strconv.Atoi(hostPort[len(hostPort)-1])
-		times, ok := diagnosis[port]
+		_, ok := diagnosis[port]
 		if !ok {
 			diagnosis[port] = 0
-			times = 0
 		}
-		diagnosis[port] += times + 1
+		diagnosis[port] += 1
 	}
 	for port, actualCount := range diagnosis {
 		expectedCount, ok := exps[port]
