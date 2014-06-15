@@ -2,6 +2,7 @@ package yeller
 
 import (
 	"errors"
+	"net"
 	"net/http"
 	"strconv"
 	"strings"
@@ -27,14 +28,16 @@ func TestSendingExceptionsToMultipleServers(t *testing.T) {
 	fakeYeller.ShouldHaveReceivedRequestsOnPorts(map[int]int{
 		5000: 1, 5001: 1, 5002: 1,
 	})
+	fakeYeller.shutdown()
 }
 
 type FakeYeller struct {
-	Ports    []int
-	requests []*http.Request
-	servers  []*http.Server
-	test     *testing.T
-	handler  func(f *FakeYeller, w http.ResponseWriter, r *http.Request)
+	Ports     []int
+	requests  []*http.Request
+	servers   []*http.Server
+	test      *testing.T
+	handler   func(f *FakeYeller, w http.ResponseWriter, r *http.Request)
+	listeners []*net.Listener
 }
 
 func NewFakeYeller(t *testing.T, handler func(f *FakeYeller, w http.ResponseWriter, r *http.Request), ports ...int) *FakeYeller {
@@ -49,11 +52,12 @@ func NewFakeYeller(t *testing.T, handler func(f *FakeYeller, w http.ResponseWrit
 			Addr:    ":" + strconv.Itoa(port),
 			Handler: fakeYeller,
 		}
-		go func() {
-			if err := server.ListenAndServe(); err != nil {
-				t.Error(err)
-			}
-		}()
+		listener, err := net.Listen("tcp", server.Addr)
+		if err != nil {
+			t.Error(err)
+		}
+		fakeYeller.listeners = append(fakeYeller.listeners, &listener)
+		go server.Serve(listener)
 		fakeYeller.servers = append(fakeYeller.servers, server)
 	}
 
@@ -66,16 +70,31 @@ func (f *FakeYeller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (f *FakeYeller) ShouldHaveReceivedRequestsOnPorts(exps map[int]int) {
+	diagnosis := make(map[int]int)
 	for _, r := range f.requests {
 		hostPort := strings.Split(r.Host, ":")
 		port, _ := strconv.Atoi(hostPort[len(hostPort)-1])
-		times, ok := exps[port]
+		times, ok := diagnosis[port]
+		if !ok {
+			diagnosis[port] = 0
+			times = 0
+		}
+		diagnosis[port] += times + 1
+	}
+	for port, actualCount := range diagnosis {
+		expectedCount, ok := exps[port]
 		if !ok {
 			f.test.Errorf("received unexpected request on port %v", port)
 		}
-		if times <= 0 {
-			f.test.Errorf("received too many requests on port %v", port)
+		if actualCount != expectedCount {
+			f.test.Errorf("received unexpected request count on port %v\ngot: %v\nexpected: %v", port, actualCount, expectedCount)
 		}
-		exps[port] -= times - 1
+
+	}
+}
+
+func (f *FakeYeller) shutdown() {
+	for _, listener := range f.listeners {
+		(*listener).Close()
 	}
 }
