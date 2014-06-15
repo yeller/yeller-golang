@@ -22,15 +22,14 @@ When handling errors that you'd like to log to Yeller:
 file, err := os.Open("filename.ext")
 if err != nil {
 
-        // notify the error by itself, with additional
-        // information about what was going on when the error happened
+        // Notify the error by itself, with additional information
+        // about what was going on when the error happened.
         info := make(map[string]interface{})
         info["filename"] = "filename.ext"
         yeller.NotifyInfo(err, info)
 
-        // notify the error by itself, with no additional information
+        // Alternatively, notify the error by itself, with no additional information.
         // yeller.Notify(err)
-        log.Fatal(err)
 }
 ```
 
@@ -38,7 +37,7 @@ Generally you should log your errors to Yeller at the highest possible level
 that still has good context information about what happened.
 
 ## HTTP Error Handling
-If you're inside an http handler, yeller
+If you're inside an http handler, Yeller
 can log request information as well:
 
 ```go
@@ -46,23 +45,20 @@ http.HandleFunc("/foo", func(w http.ResponseWriter, req *http.Request) {
         file, err := os.Open("filename.ext")
         if err != nil {
 
-
-                // log an error to yeller with http request information
-                // plus information pertinent to the error
+                // Log an error to yeller with HTTP request information
+                // in addition to information pertinent to the error.
                 info := make(map[string]interface{})
                 info["filename"] = "filename.ext"
                 yeller.NotifyHTTPInfo(err, request, info)
 
-                // alternatively just log information about
-                // the http request
+                // Alternatively, just log information about the HTTP request.
                 yeller.NotifyHTTP(err, request)
-                log.Fatal(err)
         }
 })
 ```
 
 ## Handling Panic
-Most golang programs never use panic intentionally, but it is essential to know
+Most golang programs never use `panic` intentionally, but it is essential to know
 when your program panics. Yeller handles that for you, deduplicating panics so
 even if you have thousands of crashes, you'll be able to distinguish between
 causes.
@@ -74,14 +70,16 @@ func f() {
             if r := recover(); r != nil {
                 yeller.NotifyPanic(r)
             }
-        }
+        }()
 }
 ```
 
 ## Questions
 
-If you have any questions, feel free to shoot me an email, tcrayford@yellerapp.com
+If you have any questions, feel free to shoot me an email, [tcrayford@yellerapp.com](mailto:tcrayford@yellerapp.com).
 
 ## Bug Reports And Contributions
 
-Think you've found a bug? Sorry about that. Please open an issue on Github, or email me at tcrayford@yellerapp.com and I'll check it out as soon as possible.
+Think you've found a bug? Sorry about that. Please open an issue on Github, or
+email me at [tcrayford@yellerapp.com](mailto:tcrayford@yellerapp.com) and I'll
+check it out as soon as possible.
