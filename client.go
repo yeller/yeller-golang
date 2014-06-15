@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -14,6 +15,7 @@ type Client struct {
 	ApiKey          string
 	Environment     string
 	Version         string
+	roundtripMutex  *sync.Mutex
 	lastHostnameIdx int
 	hostnames       []string
 	httpClient      *http.Client
@@ -52,6 +54,7 @@ func NewClientHostnames(apiKey string, env string, errorHandler YellerErrorHandl
 		ApiKey:          apiKey,
 		Environment:     env,
 		Version:         CLIENT_VERSION,
+		roundtripMutex:  &sync.Mutex{},
 		lastHostnameIdx: randomHostnameIdx(hostnames),
 		hostnames:       hostnames,
 		httpClient:      &httpClient,
@@ -108,6 +111,10 @@ func (c *Client) hostname() string {
 }
 
 func (c *Client) cycleHostname() {
+	c.roundtripMutex.Lock()
+	defer func() {
+		c.roundtripMutex.Unlock()
+	}()
 	c.lastHostnameIdx = (c.lastHostnameIdx + 1) % len(c.hostnames)
 }
 
