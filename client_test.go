@@ -14,7 +14,7 @@ func TestSendingExceptionsToMultipleServers(t *testing.T) {
 	fakeYeller := NewFakeYeller(t, 5000, 5001, 5002)
 
 	hostnames := []string{"http://localhost:5000", "http://localhost:5001", "http://localhost:5002"}
-	client := NewClientHostnames("AN_API_KEY", ENV, NewSilentErrorHandler(), hostnames)
+	client := NewClientHostnames("AN_API_KEY", ENV, NewPanicErrorHandler(), hostnames)
 	for _ = range hostnames {
 		note := newErrorNotification(client, errors.New("an error"), nil)
 		client.Notify(note)

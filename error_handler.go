@@ -11,6 +11,8 @@ type LogErrorHandler struct {
 
 type SilentErrorHandler struct{}
 
+type PanicErrorHandler struct{}
+
 func (l *LogErrorHandler) HandleIOError(e error) error {
 	l.logger.Println(e)
 	return nil
@@ -33,6 +35,18 @@ func NewStdErrErrorHandler() YellerErrorHandler {
 
 func NewSilentErrorHandler() YellerErrorHandler {
 	return &SilentErrorHandler{}
+}
+
+func (l *PanicErrorHandler) HandleIOError(e error) error {
+	panic(e)
+}
+
+func (l *PanicErrorHandler) HandleAuthError(e error) error {
+	panic(e)
+}
+
+func NewPanicErrorHandler() YellerErrorHandler {
+	return &PanicErrorHandler{}
 }
 
 func (l *SilentErrorHandler) HandleIOError(e error) error {
