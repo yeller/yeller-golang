@@ -60,6 +60,7 @@ func NewClientHostnames(apiKey string, env string, errorHandler YellerErrorHandl
 }
 
 func (c *Client) Notify(note *ErrorNotification) error {
+	c.cycleHostname()
 	json, err := json.Marshal(note)
 	if err != nil {
 		return err
