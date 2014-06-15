@@ -11,7 +11,11 @@ import (
 const ENV = "test"
 
 func TestSendingExceptionsToMultipleServers(t *testing.T) {
-	fakeYeller := NewFakeYeller(t, 5000, 5001, 5002)
+	fakeYellerHandler := func(f *FakeYeller, w http.ResponseWriter, r *http.Request) {
+		f.requests = append(f.requests, r)
+		w.WriteHeader(http.StatusOK)
+	}
+	fakeYeller := NewFakeYeller(t, fakeYellerHandler, 5000, 5001, 5002)
 
 	hostnames := []string{"http://localhost:5000", "http://localhost:5001", "http://localhost:5002"}
 	client := NewClientHostnames("AN_API_KEY", ENV, NewPanicErrorHandler(), hostnames)
@@ -30,12 +34,14 @@ type FakeYeller struct {
 	requests []*http.Request
 	servers  []*http.Server
 	test     *testing.T
+	handler  func(f *FakeYeller, w http.ResponseWriter, r *http.Request)
 }
 
-func NewFakeYeller(t *testing.T, ports ...int) *FakeYeller {
+func NewFakeYeller(t *testing.T, handler func(f *FakeYeller, w http.ResponseWriter, r *http.Request), ports ...int) *FakeYeller {
 	fakeYeller := &FakeYeller{
-		Ports: ports,
-		test:  t,
+		Ports:   ports,
+		test:    t,
+		handler: handler,
 	}
 
 	for _, port := range ports {
@@ -56,8 +62,7 @@ func NewFakeYeller(t *testing.T, ports ...int) *FakeYeller {
 
 func (f *FakeYeller) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// XXX: Synchronize me bro
-	f.requests = append(f.requests, r)
-	w.WriteHeader(http.StatusOK)
+	f.handler(f, w, r)
 }
 
 func (f *FakeYeller) ShouldHaveReceivedRequestsOnPorts(exps map[int]int) {
