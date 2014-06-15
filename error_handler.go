@@ -1,4 +1,5 @@
 package yeller
+
 import (
 	"log"
 	"os"
@@ -8,8 +9,7 @@ type LogErrorHandler struct {
 	logger *log.Logger
 }
 
-type SilentErrorHandler struct {}
-
+type SilentErrorHandler struct{}
 
 func (l *LogErrorHandler) HandleIOError(e error) error {
 	l.logger.Println(e)
@@ -32,7 +32,7 @@ func NewStdErrErrorHandler() YellerErrorHandler {
 }
 
 func NewSilentErrorHandler() YellerErrorHandler {
-    return &SilentErrorHandler{}
+	return &SilentErrorHandler{}
 }
 
 func (l *SilentErrorHandler) HandleIOError(e error) error {
@@ -42,4 +42,3 @@ func (l *SilentErrorHandler) HandleIOError(e error) error {
 func (l *SilentErrorHandler) HandleAuthError(e error) error {
 	return nil
 }
-

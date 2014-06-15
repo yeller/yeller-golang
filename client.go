@@ -90,9 +90,13 @@ func (c *Client) tryNotifying(json []byte) error {
 	if response.StatusCode == 401 {
 		authError := errors.New("Could not authenticate yeller client. Check your API key and that your subscription is active")
 		c.errorHandler.HandleAuthError(authError)
+		// Explictly return nil so that the client doesn't try to
+		// round robin reporting this exception.
 		return nil
 	}
 	if response.StatusCode < 200 || response.StatusCode > 299 {
+		// Don't report the error here, it gets
+		// reported after we've round robined through clients
 		return errors.New("Received a non 200 HTTP Code: " + response.Status)
 	}
 	return err
