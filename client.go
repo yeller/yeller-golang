@@ -115,9 +115,9 @@ func NewSilentErrorHandler() YellerErrorHandler {
 func (c *Client) tryNotifying(json []byte) error {
 	url := "http://" + c.hostname() + "/" + c.ApiKey
 	response, err := c.httpClient.Post(url, "application/json", bytes.NewReader(json))
-    if err != nil {
-        panic(err)
-    }
+	if err != nil {
+		panic(err)
+	}
 	if response.StatusCode == 401 {
 		authError := errors.New("Could not authenticate yeller client. Check your API key and that your subscription is active")
 		c.errorHandler.HandleAuthError(authError)

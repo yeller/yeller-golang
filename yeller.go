@@ -124,9 +124,9 @@ func (f StackFrame) MarshalJSON() ([]byte, error) {
 }
 
 func newErrorNotification(client *Client, appErr error, info map[string]interface{}) *ErrorNotification {
-    if info == nil {
-        info = make(map[string]interface{})
-    }
+	if info == nil {
+		info = make(map[string]interface{})
+	}
 	newErr := &ErrorNotification{
 		Type:          "error",
 		Message:       appErr.Error(),
