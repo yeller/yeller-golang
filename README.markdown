@@ -45,8 +45,17 @@ can log request information as well:
 http.HandleFunc("/foo", func(w http.ResponseWriter, req *http.Request) {
         file, err := os.Open("filename.ext")
         if err != nil {
-                yeller.NotifyHTTP(err, req)
-                yeller.NotifyHTTPInfo(err, ...)
+
+
+                // log an error to yeller with http request information
+                // plus information pertinent to the error
+                info := make(map[string]interface{})
+                info["filename"] = "filename.ext"
+                yeller.NotifyHTTPInfo(err, request, info)
+
+                // alternatively just log information about
+                // the http request
+                yeller.NotifyHTTP(err, request)
                 log.Fatal(err)
         }
 })
@@ -68,3 +77,16 @@ func f() {
         }
 }
 ```
+
+# Wrapping Up
+
+So that's Yeller's golang client. I hope you enjoy using it to track and
+diagnose your go errors.
+
+## Questions
+
+If you have any questions, feel free to shoot me an email, tcrayford@yellerapp.com
+
+## Bug Reports And Contributions
+
+Think you've found a bug? Sorry about that. Please open an issue on Github, or email me at tcrayford@yellerapp.com and I'll check it out as soon as possible.
