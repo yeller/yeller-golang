@@ -1,4 +1,4 @@
 #!/bin/bash
 
 set -e
-go test 2>&1 | head
+go test
