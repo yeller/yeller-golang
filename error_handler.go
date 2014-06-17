@@ -5,6 +5,11 @@ import (
 	"os"
 )
 
+type YellerErrorHandler interface {
+	HandleIOError(error) error
+	HandleAuthError(error) error
+}
+
 type LogErrorHandler struct {
 	logger *log.Logger
 }

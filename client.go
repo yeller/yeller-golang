@@ -22,11 +22,6 @@ type Client struct {
 	errorHandler    YellerErrorHandler
 }
 
-type YellerErrorHandler interface {
-	HandleIOError(error) error
-	HandleAuthError(error) error
-}
-
 const CLIENT_VERSION = "yeller-golang: 0.0.1"
 
 func NewClient(apiKey string, env string, errorHandler YellerErrorHandler) (client *Client) {
