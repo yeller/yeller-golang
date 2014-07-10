@@ -53,11 +53,11 @@ func StartWithErrorHandlerEnv(apiKey string, env string, errorHandler YellerErro
 }
 
 func Notify(appErr error) {
-	NotifyInfo(appErr, make(map[string]interface{}))
+	NotifyInfo(appErr, nil)
 }
 
 func NotifyInfo(appErr error, info map[string]interface{}) {
-	notification := newErrorNotification(appErr, info)
+	notification := newErrorNotification(client, appErr, info)
 	err := client.Notify(notification)
 	if err != nil {
 		log.Println(err)
@@ -123,7 +123,10 @@ func (f StackFrame) MarshalJSON() ([]byte, error) {
 	return json.Marshal(fields)
 }
 
-func newErrorNotification(appErr error, info map[string]interface{}) *ErrorNotification {
+func newErrorNotification(client *Client, appErr error, info map[string]interface{}) *ErrorNotification {
+	if info == nil {
+		info = make(map[string]interface{})
+	}
 	newErr := &ErrorNotification{
 		Type:          "error",
 		Message:       appErr.Error(),
