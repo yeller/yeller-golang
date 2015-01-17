@@ -104,6 +104,19 @@ func NotifyHTTPInfo(appErr error, request http.Request, info map[string]interfac
 	newInfo["Cookies"] = getCookies(request)
 	newInfo["url"] = request.URL
 
+	requestInfo := make(map[string]interface{})
+	requestInfo["request-method"] = request.Method
+
+	if len(request.Header["User-Agent"]) != 0 {
+		requestInfo["user-agent"] = request.Header["User-Agent"][0]
+	}
+
+	if len(request.Header["Referer"]) != 0 {
+		requestInfo["referrer"] = request.Header["Referer"][0]
+	}
+
+	newInfo["http-request"] = requestInfo
+
 	for k, v := range info {
 		newInfo[k] = v
 	}
