@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+    "reflect"
 )
 
 const ENV = "test"
@@ -61,6 +62,7 @@ func TestRoundTrippingFailingServers(t *testing.T) {
 type FakeYeller struct {
 	Ports     []int
 	requests  []*http.Request
+    errorNotifications []*ErrorNotification
 	servers   []*http.Server
 	test      *testing.T
 	handler   func(f *FakeYeller, w http.ResponseWriter, r *http.Request)
@@ -117,6 +119,20 @@ func (f *FakeYeller) ShouldHaveReceivedRequestsOnPorts(exps map[int]int) {
 		}
 
 	}
+}
+
+func (f *FakeYeller) ShouldHaveReceivedRequestWithInfo(exps map[string]interface{}) {
+    received := false
+	for _, r := range f.errorNotifications {
+      for k,v := range exps {
+        if reflect.DeepEqual(r.CustomData[k], v) {
+          received = true
+        }
+      }
+	}
+    if !received {
+      f.test.Errorf("didn't receive request with matching info, %s", f.errorNotifications)
+    }
 }
 
 func (f *FakeYeller) shutdown() {

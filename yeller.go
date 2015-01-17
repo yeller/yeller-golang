@@ -52,6 +52,10 @@ func StartWithErrorHandlerEnv(apiKey string, env string, errorHandler YellerErro
 	client = NewClient(apiKey, env, errorHandler)
 }
 
+func StartWithClient(newClient *Client) {
+	client = newClient
+}
+
 func Notify(appErr error) {
 	NotifyInfo(appErr, nil)
 }
