@@ -178,8 +178,9 @@ func applicationStackTrace() (stackTrace []StackFrame) {
 			continue
 		}
 
+		file = strings.Replace(file, goroot, "", -1)
 		frame := StackFrame{
-			Filename:     strings.Replace(file, goroot, "", 1),
+			Filename:     file,
 			LineNumber:   strconv.Itoa(line),
 			FunctionName: functionName(pc),
 		}
