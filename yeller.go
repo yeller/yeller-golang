@@ -166,6 +166,7 @@ func applicationHostname() string {
 }
 
 func applicationStackTrace() (stackTrace []StackFrame) {
+	goroot := runtime.GOROOT()
 	for i := 1; i <= MAX_STACK_DEPTH+1; i++ {
 		pc, file, line, ok := runtime.Caller(i)
 		if !ok {
@@ -178,7 +179,7 @@ func applicationStackTrace() (stackTrace []StackFrame) {
 		}
 
 		frame := StackFrame{
-			Filename:     file,
+			Filename:     strings.Replace(file, goroot, "", 1),
 			LineNumber:   strconv.Itoa(line),
 			FunctionName: functionName(pc),
 		}
