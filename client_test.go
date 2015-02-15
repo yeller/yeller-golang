@@ -11,6 +11,7 @@ import (
 )
 
 const ENV = "test"
+const PROJECT_ROOT = "app"
 
 func TestSendingExceptionsToMultipleServers(t *testing.T) {
 	fakeYellerHandler := func(f *FakeYeller, w http.ResponseWriter, r *http.Request) {
@@ -20,7 +21,7 @@ func TestSendingExceptionsToMultipleServers(t *testing.T) {
 	fakeYeller := NewFakeYeller(t, fakeYellerHandler, 5000, 5001, 5002)
 
 	hostnames := []string{"http://localhost:5000", "http://localhost:5001", "http://localhost:5002"}
-	client := NewClientHostnames("AN_API_KEY", ENV, NewPanicErrorHandler(), hostnames)
+	client := NewClientHostnames("AN_API_KEY", ENV, PROJECT_ROOT, NewPanicErrorHandler(), hostnames)
 	for _ = range hostnames {
 		note := newErrorNotification(client, errors.New("an error"), nil)
 		client.Notify(note)
@@ -47,7 +48,7 @@ func TestRoundTrippingFailingServers(t *testing.T) {
 	fakeYeller := NewFakeYeller(t, fakeYellerHandler, 5000, 5001, 5002)
 
 	hostnames := []string{"http://localhost:5000", "http://localhost:5001", "http://localhost:5002"}
-	client := NewClientHostnames("AN_API_KEY", ENV, NewPanicErrorHandler(), hostnames)
+	client := NewClientHostnames("AN_API_KEY", ENV, PROJECT_ROOT, NewPanicErrorHandler(), hostnames)
 	for _ = range hostnames {
 		note := newErrorNotification(client, errors.New("an error"), nil)
 		client.Notify(note)

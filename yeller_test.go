@@ -19,7 +19,7 @@ func TestSendingErrorsWithHTTPInfo(t *testing.T) {
 	fakeYeller := NewFakeYeller(t, fakeYellerHandler, 5000)
 
 	hostnames := []string{"http://localhost:5000", "http://localhost:5001", "http://localhost:5002"}
-	client := NewClientHostnames("AN_API_KEY", ENV, NewPanicErrorHandler(), hostnames)
+	client := NewClientHostnames("AN_API_KEY", ENV, PROJECT_ROOT, NewPanicErrorHandler(), hostnames)
 	StartWithClient(client)
 	req, _ := http.NewRequest("GET", "", nil)
 	NotifyHTTP(errors.New("an error"), *req)

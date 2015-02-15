@@ -28,6 +28,7 @@ type StackFrame struct {
 	Filename     string
 	LineNumber   string
 	FunctionName string
+	Options      map[string]interface{}
 }
 
 const (
@@ -37,19 +38,35 @@ const (
 var client *Client
 
 func Start(apiKey string) {
-	client = NewClient(apiKey, "production", NewStdErrErrorHandler())
+	client = NewClient(apiKey, "production", "", NewStdErrErrorHandler())
+}
+
+func StartApplicationRoot(apiKey string, applicationRoot string) {
+	client = NewClient(apiKey, "production", applicationRoot, NewStdErrErrorHandler())
 }
 
 func StartEnv(apiKey string, env string) {
-	client = NewClient(apiKey, env, NewStdErrErrorHandler())
+	client = NewClient(apiKey, env, "", NewStdErrErrorHandler())
+}
+
+func StartEnvApplicationRoot(apiKey string, env string, applicationRoot string) {
+	client = NewClient(apiKey, env, applicationRoot, NewStdErrErrorHandler())
 }
 
 func StartWithErrorHandler(apiKey string, env string, errorHandler YellerErrorHandler) {
-	client = NewClient(apiKey, env, errorHandler)
+	client = NewClient(apiKey, env, "", errorHandler)
+}
+
+func StartWithErrorHandlerApplicationRoot(apiKey string, env string, applicationRoot string, errorHandler YellerErrorHandler) {
+	client = NewClient(apiKey, env, "", errorHandler)
 }
 
 func StartWithErrorHandlerEnv(apiKey string, env string, errorHandler YellerErrorHandler) {
-	client = NewClient(apiKey, env, errorHandler)
+	client = NewClient(apiKey, env, "", errorHandler)
+}
+
+func StartWithErrorHandlerEnvApplicationRoot(apiKey string, env string, applicationRoot string, errorHandler YellerErrorHandler) {
+	client = NewClient(apiKey, env, applicationRoot, errorHandler)
 }
 
 func StartWithClient(newClient *Client) {
@@ -136,7 +153,7 @@ func getCookies(request http.Request) map[string]interface{} {
 }
 
 func (f StackFrame) MarshalJSON() ([]byte, error) {
-	fields := []string{f.Filename, f.LineNumber, f.FunctionName}
+	fields := []interface{}{f.Filename, f.LineNumber, f.FunctionName, f.Options}
 	return json.Marshal(fields)
 }
 
@@ -147,7 +164,7 @@ func newErrorNotification(client *Client, appErr error, info map[string]interfac
 	newErr := &ErrorNotification{
 		Type:          "error",
 		Message:       appErr.Error(),
-		StackTrace:    applicationStackTrace(),
+		StackTrace:    applicationStackTrace(client),
 		Host:          applicationHostname(),
 		Environment:   client.Environment,
 		CustomData:    info,
@@ -165,7 +182,7 @@ func applicationHostname() string {
 	return hostname
 }
 
-func applicationStackTrace() (stackTrace []StackFrame) {
+func applicationStackTrace(client *Client) (stackTrace []StackFrame) {
 	goroot := runtime.GOROOT()
 	for i := 1; i <= MAX_STACK_DEPTH+1; i++ {
 		pc, file, line, ok := runtime.Caller(i)
@@ -178,11 +195,16 @@ func applicationStackTrace() (stackTrace []StackFrame) {
 			continue
 		}
 
+		opts := make(map[string]interface{})
+		if client.ProjectRoot != "" && strings.HasPrefix(file, client.ProjectRoot) {
+			opts["in-app"] = true
+		}
 		file = strings.Replace(file, goroot, "", -1)
 		frame := StackFrame{
 			Filename:     file,
 			LineNumber:   strconv.Itoa(line),
 			FunctionName: functionName(pc),
+			Options:      opts,
 		}
 		stackTrace = append(stackTrace, frame)
 	}

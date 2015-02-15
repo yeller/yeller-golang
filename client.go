@@ -15,6 +15,7 @@ type Client struct {
 	ApiKey          string
 	Environment     string
 	Version         string
+	ProjectRoot     string
 	roundtripMutex  *sync.Mutex
 	lastHostnameIdx int
 	hostnames       []string
@@ -24,7 +25,7 @@ type Client struct {
 
 const CLIENT_VERSION = "yeller-golang: 0.0.1"
 
-func NewClient(apiKey string, env string, errorHandler YellerErrorHandler) (client *Client) {
+func NewClient(apiKey string, env string, projectRoot string, errorHandler YellerErrorHandler) (client *Client) {
 	yellerHostnames := []string{
 		"https://collector1.yellerapp.com",
 		"https://collector2.yellerapp.com",
@@ -32,10 +33,10 @@ func NewClient(apiKey string, env string, errorHandler YellerErrorHandler) (clie
 		"https://collector4.yellerapp.com",
 		"https://collector5.yellerapp.com",
 	}
-	return NewClientHostnames(apiKey, env, errorHandler, yellerHostnames)
+	return NewClientHostnames(apiKey, env, projectRoot, errorHandler, yellerHostnames)
 }
 
-func NewClientHostnames(apiKey string, env string, errorHandler YellerErrorHandler, hostnames []string) (client *Client) {
+func NewClientHostnames(apiKey string, env string, projectRoot string, errorHandler YellerErrorHandler, hostnames []string) (client *Client) {
 	// Set a timeout of 1 second before moving on to a different host
 	transport := http.Transport{
 		Dial: func(network, addr string) (net.Conn, error) {
@@ -49,6 +50,7 @@ func NewClientHostnames(apiKey string, env string, errorHandler YellerErrorHandl
 		ApiKey:          apiKey,
 		Environment:     env,
 		Version:         CLIENT_VERSION,
+		ProjectRoot:     projectRoot,
 		roundtripMutex:  &sync.Mutex{},
 		lastHostnameIdx: randomHostnameIdx(hostnames),
 		hostnames:       hostnames,
