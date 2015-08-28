@@ -88,6 +88,9 @@ func (c *Client) tryNotifying(json []byte) error {
 	if err != nil {
 		return err
 	}
+
+	response.Body.Close()
+
 	if response.StatusCode == 401 {
 		authError := errors.New("Could not authenticate yeller client. Check your API key and that your subscription is active")
 		c.errorHandler.HandleAuthError(authError)
