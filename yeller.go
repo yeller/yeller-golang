@@ -57,8 +57,8 @@ func StartWithErrorHandler(apiKey string, env string, errorHandler YellerErrorHa
 	client = NewClient(apiKey, env, "", errorHandler)
 }
 
-func StartWithErrorHandlerApplicationRoot(apiKey string, env string, applicationRoot string, errorHandler YellerErrorHandler) {
-	client = NewClient(apiKey, env, "", errorHandler)
+func StartWithErrorHandlerApplicationRoot(apiKey string, applicationRoot string, errorHandler YellerErrorHandler) {
+	client = NewClient(apiKey, "production", applicationRoot, errorHandler)
 }
 
 func StartWithErrorHandlerEnv(apiKey string, env string, errorHandler YellerErrorHandler) {
