@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"runtime"
@@ -79,10 +78,7 @@ func Notify(appErr error) {
 
 func NotifyInfo(appErr error, info map[string]interface{}) {
 	notification := newErrorNotification(client, appErr, info)
-	err := client.Notify(notification)
-	if err != nil {
-		log.Println(err)
-	}
+	client.Notify(notification)
 }
 
 func NotifyPanic(panicErr interface{}) {
